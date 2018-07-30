@@ -9,7 +9,7 @@ import random
 batch_size=2048
 a=0.2
 
-num=1
+num=''
 x_data = np.loadtxt(open("x_data%s"%(num),"rb"),delimiter=" ",skiprows=0)
 x_mean = np.loadtxt(open("x_mean%s"%(num),"rb"),delimiter=" ",skiprows=0)
 x_var = np.loadtxt(open("x_var%s"%(num),"rb"),delimiter=" ",skiprows=0)
@@ -33,9 +33,9 @@ def data_train(x_data,y_data,locl,a):
     
     return x_vail,y_vail,l_vail,x_train,y_train,l_train
 
-for j in range(10):
+for j in range(20):
     xv,yv,lv,xt,yt,lt=data_train(x_data,y_data,l_data,0.2)
-    for i in range(10):
+    for i in range(9):
         x_vail,y_vail,l_vail,x_train,y_train,l_train=data_train(x_data,y_data,l_data,0.2)
         xv=np.vstack([xv,x_vail])
         yv=np.vstack([yv,y_vail])

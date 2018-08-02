@@ -9,11 +9,13 @@ import random
 batch_size=2048
 a=0.1
 
-num=1
+num=''
 x_data = np.loadtxt(open("x_data%s"%(num),"rb"),delimiter=" ",skiprows=0)
 y_data = np.loadtxt(open("y_data%s"%(num),"rb"),delimiter=" ",skiprows=0)
 l_data=np.loadtxt(open("l_data%s"%(num),"rb"),delimiter=" ",skiprows=0)
-
+##################
+l_data=np.zeros((9604,3))
+############
 def data_train(x_data,y_data,locl,a):
     size=len(x_data)
     test_count=random.sample(range(size),int(size*a))
@@ -26,9 +28,9 @@ def data_train(x_data,y_data,locl,a):
     
     return x_vail,y_vail,l_vail,x_train,y_train,l_train
 
-for j in range(20):
+for j in range(2):
     xv,yv,lv,xt,yt,lt=data_train(x_data,y_data,l_data,a)
-    for i in range(9):
+    for i in range(1):
         x_vail,y_vail,l_vail,x_train,y_train,l_train=data_train(x_data,y_data,l_data,a)
         xv=np.vstack([xv,x_vail])
         yv=np.vstack([yv,y_vail])

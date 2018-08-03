@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
+#coding:utf-8
 
 
 import sys
 import os
+import time
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,10 +12,11 @@ import random
 from numpy import loadtxt,savetxt,zeros
 import math
 import seaborn as sns
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+tStart = time.time()
 
-num=1
+num=''
 batch_size = 256
 nu=128
 nu2=512
@@ -24,16 +26,23 @@ nu5=64
 nu6=32
 nu7=15
 
-frecords_filename=["//lfs//xbrain//home//acctouhou//data//%s//0data.tfr"%(num)]
+frecords_filename1=["0data.tfr"]
+frecords_filename2=["0vali.tfr"]
 for i in range (19):
-    frecords_filename.append("//lfs//xbrain//home//acctouhou//data//%s//%sdata.tfr"%(num,i+1))
+    frecords_filename1.append("%sdata.tfr"%(i+1))
+    frecords_filename2.append("%svali.tfr"%(i+1))
 
-l_test=np.loadtxt(open("//lfs//xbrain//home//acctouhou//all_data//bn_drop//%s//l_test%s"%(num,num),"rb"),delimiter=" ",skiprows=0)  
-x_test=np.loadtxt(open("//lfs//xbrain//home//acctouhou//all_data//bn_drop//%s//x_test%s"%(num,num),"rb"),delimiter=" ",skiprows=0)  
-y_test=np.loadtxt(open("//lfs//xbrain//home//acctouhou//all_data//bn_drop//%s//y_test%s"%(num,num),"rb"),delimiter=" ",skiprows=0)  
+l_test=np.loadtxt(open("l_test%s"%(num),"rb"),delimiter=" ",skiprows=0)
+t_size=len(l_test)
+l_test=tf.cast(l_test,tf.float32)
+x_test=np.loadtxt(open("x_test%s"%(num),"rb"),delimiter=" ",skiprows=0)  
+x_test=tf.cast(x_test,tf.float32)
+y_test=np.loadtxt(open("y_test%s"%(num),"rb"),delimiter=" ",skiprows=0)  
+y_test=tf.cast(y_test,tf.float32)
+d_len=np.loadtxt(open("data_len","rb"),delimiter=" ",skiprows=0)
 
-dataset = tf.data.TFRecordDataset(frecords_filename)
-
+dataset = tf.data.TFRecordDataset(frecords_filename1)
+dataset2 = tf.data.TFRecordDataset(frecords_filename2)
 dataset_for_test = tf.data.Dataset.from_tensor_slices((x_test,y_test,l_test))
 
 
@@ -58,9 +67,9 @@ def parser2(record):
           )
       return tf.cast(tf.reshape(tf.decode_raw(features['xt'],tf.float64),[135]),tf.float32),tf.cast(tf.reshape(tf.decode_raw(features['yt'],tf.float64),[15]),tf.float32),tf.cast(tf.reshape(tf.decode_raw(features['lt'],tf.float64),[3]),tf.float32)
 
-dataset1=dataset.map(parser1).batch(int(batch_size*100)).shuffle(buffer_size=10).repeat()
-dataset2=dataset.map(parser2).batch(int(batch_size)).shuffle(buffer_size=10).repeat()
-dataset_for_test=dataset_for_test.batch(len(l_test)).repeat()
+dataset1=dataset.map(parser2).batch(int(batch_size)).repeat()#train
+dataset2=dataset2.map(parser1).batch(d_len[1]).repeat()#vali
+dataset_for_test=dataset_for_test.batch(t_size).repeat()#test
 
 handle = tf.placeholder(tf.string,shape=[])
 iterator=dataset.make_one_shot_iterator()
@@ -69,14 +78,15 @@ iterator = tf.data.Iterator.from_string_handle(
 
 next_element = iterator.get_next()
 
-train_op = dataset2.make_one_shot_iterator()
-vali_op = dataset1.make_initializable_iterator()
+train_op = dataset1.make_one_shot_iterator()
+vali_op = dataset2.make_initializable_iterator()
 test_op = dataset_for_test.make_initializable_iterator()
+
 
 train= tf.placeholder(tf.bool)
 
-wwtf=tf.glorot_uniform_initializer()
-#tf.keras.initializers.lecun_normal()
+#wwtf=tf.glorot_uniform_initializer()
+wwtf=tf.keras.initializers.lecun_normal()
 #tf.glorot_uniform_initializer()
 W1 = tf.get_variable('W1',shape=[135, nu], initializer=wwtf)
 W2 = tf.get_variable('W2',shape=[nu, nu2], initializer=wwtf)
@@ -124,7 +134,6 @@ init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
 
-
 v_all = tf.trainable_variables()
 g_list = tf.global_variables()
 bn_mean = [g for g in g_list if 'moving_mean' in g.name]
@@ -136,7 +145,7 @@ optimizer = tf.train.AdamOptimizer()
 gradients = optimizer.compute_gradients(loss,we)
 for tt1 in range(len(gradients)):
     exec("g%d=gradients[%d]" % (tt1,tt1))
-
+    
 def mv_check():
     bv=sess.run(bn_var)
     bm=sess.run(bn_mean)
@@ -321,12 +330,14 @@ handle2 = sess.run(train_op.string_handle())
 handle1 = sess.run(vali_op.string_handle())
 handle3 = sess.run(test_op.string_handle())
 sess.run(vali_op.initializer)
+sess.run(test_op.initializer)
+
 
 saver = tf.train.Saver(var_list=var_list, max_to_keep=5)
+
 for i in range(int(1e5)):
-     _ = sess.run(step,feed_dict={handle:handle2,train:True})
-     '''
-     if(i%50==0):
+    _ = sess.run(step,feed_dict={handle:handle2,train:True})
+    if(i%50==0):
          loss_v,error,local,temp,gg= sess.run([loss,test_loss,l,ans,y],feed_dict={handle:handle1,train:False})
          loss_t= sess.run(loss,feed_dict={handle:handle2,train:False})
          loss_vali.append(loss_v)
@@ -364,6 +375,7 @@ for i in range(int(1e5)):
              save_path = saver.save(sess, "my_net/save_net.ckpt")
              error,temp,gg = sess.run([test_loss,ans,y],feed_dict={handle:handle3,train:False})
              error_check2(error,l_test)
+             mv_check()
              print('---------test------------')
              for uu in range(15):
                  exec("temp_%d=stats.pearsonr(gg[:,%d],temp[:,%d])"%(uu,uu,uu))
@@ -371,8 +383,6 @@ for i in range(int(1e5)):
                  exec("plott(temp,gg,1e-2,%d,temp_0,'test')"%(uu+1))
              print('-------------------------')
 
-'''
 
-    
-
-
+tEnd = time.time()
+print ("It cost %f sec" % (tEnd - tStart))

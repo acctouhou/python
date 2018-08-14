@@ -9,8 +9,8 @@ import random
 from numpy import loadtxt,savetxt,zeros
 import math
 import seaborn as sns
-plt.switch_backend('agg')
 
+plt.switch_backend('agg')
 def xavier_init(size):
     in_dim = size[0]
     xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
@@ -309,7 +309,7 @@ for tt2 in range(len(gradients)):
     exec("gm%d=[]"% (tt2))
     exec("gv%d=[]"% (tt2))
 
-for i in range(int(1e6)):
+for i in range(int(1e4)):
     print(i)
     x_vail,y_vail,x_train,y_train,local=data_train(x_data,y_data,l_data,0.2)
     sess.run(iterator.initializer, feed_dict={dx:x_train,dy:y_train})
@@ -317,7 +317,7 @@ for i in range(int(1e6)):
     for j in range(long):
         temp_x,temp_y=sess.run([x_in,y_in])
         _ = sess.run(step,feed_dict={x:temp_x,y:temp_y,train:True,pp:0.8,aa:0})
-    if(i%50==0):
+    if(i%20==0):
         loss_tr=sess.run(loss1,feed_dict={x:temp_x,y:temp_y,train:False,pp:1,aa:0.2})
         loss_v,error,temp,gg = sess.run([loss1,test_loss,ans,y],feed_dict={x:x_vail,y:y_vail,train:False,pp:1,aa:0.2})        
         loss_train.append(loss_tr)
@@ -333,13 +333,13 @@ for i in range(int(1e6)):
             exec("plott(temp,gg,1e-2,%d,temp_0,'vali')"%(uu+1))
             
         print('-------------------------')
-        plt.plot(loss_train)
+        plt.plot(np.log10(loss_train))
         plt.title('loss_train')
         plt.xlabel("Iteration")
         #plt.ylim(0,2e5)
         plt.savefig('loss_t.png')
         plt.clf()
-        plt.plot(loss_vali)
+        plt.plot(np.log10(loss_vali))
         plt.title('loss_vali')
         plt.xlabel("Iteration")
         plt.savefig('loss_v.png')
@@ -357,19 +357,19 @@ for i in range(int(1e6)):
             plt.savefig("gradient%d.png"%(tt2+1))
             plt.clf()
         for tt2 in range(len(gradients)):
-            exec("plt.plot(gm%d,label='l%dm')" % (tt2,tt2))
-            exec("plt.plot(gv%d,label='l%dv')" % (tt2,tt2))
+            exec("plt.plot(np.log10(gm%d),label='l%dm')" % (tt2,tt2))
+            exec("plt.plot(np.log10(gv%d),label='l%dv')" % (tt2,tt2))
         plt.legend(loc='upper right')
         plt.title('gradient_mv')
         plt.xlabel("Iteration")
         plt.savefig('gmv.png')
         plt.clf()
-    if(i%500==0):
+    if(i%200==0):
         error,loss_te,temp,gg = sess.run([test_loss,loss1,ans,y],feed_dict={x:x_test,y:y_test,train:False,pp:1,aa:0.2})
         error_check2(error,l_test)
         loss_test.append(loss_te)
         print('loss_te:',loss_te)
-        plt.plot(loss_test)
+        plt.plot(np.log10(loss_test))
         plt.title('loss_test')
         plt.xlabel("Iteration")
         plt.savefig('loss_te.png')

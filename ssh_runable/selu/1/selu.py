@@ -1,6 +1,6 @@
 #coding:utf-8
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -306,7 +306,7 @@ for tt2 in range(len(gradients)):
     exec("gm%d=[]"% (tt2))
     exec("gv%d=[]"% (tt2))
 
-for i in range(int(1e6)):
+for i in range(int(1e4)):
     print(i)
     x_vail,y_vail,x_train,y_train,local=data_train(x_data,y_data,l_data,0.2)
     sess.run(iterator.initializer, feed_dict={dx:x_train,dy:y_train})
@@ -314,7 +314,7 @@ for i in range(int(1e6)):
     for j in range(long):
         temp_x,temp_y=sess.run([x_in,y_in])
         _ = sess.run(step,feed_dict={x:temp_x,y:temp_y,train:True,pp:0.8,aa:0})
-    if(i%50==0):
+    if(i%20==0):
         loss_tr=sess.run(loss1,feed_dict={x:temp_x,y:temp_y,train:False,pp:1,aa:0.2})
         loss_v,error,temp,gg = sess.run([loss1,test_loss,ans,y],feed_dict={x:x_vail,y:y_vail,train:False,pp:1,aa:0.2})        
         loss_train.append(loss_tr)
@@ -347,8 +347,8 @@ for i in range(int(1e6)):
             exec("sns.distplot(lg%d.reshape((lg%d.size,1)),kde=True,norm_hist=False)"%(tt2,tt2))
             exec("wtf1=lg%d.mean()"% (tt2))
             exec("wtf2=lg%d.var()"% (tt2))
-            exec("gm%d=wtf1"% (tt2))
-            exec("gv%d=wtf2"% (tt2))
+            exec("gm%d.append(wtf1)"% (tt2))
+            exec("gv%d.append(wtf2)"% (tt2))
             plt.title('Layer%d m=%s v=%s'%(tt2+1,wtf1,wtf2))
             plt.ylabel("Gradients")
             plt.savefig("gradient%d.png"%(tt2+1))
@@ -361,7 +361,7 @@ for i in range(int(1e6)):
         plt.xlabel("Iteration")
         plt.savefig('gmv.png')
         plt.clf()
-    if(i%500==0):
+    if(i%200==0):
         error,loss_te,temp,gg = sess.run([test_loss,loss1,ans,y],feed_dict={x:x_test,y:y_test,train:False,pp:1,aa:0.2})
         error_check2(error,l_test)
         loss_test.append(loss_te)

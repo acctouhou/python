@@ -1,6 +1,6 @@
 #coding:utf-8
 import os
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,25 +24,25 @@ nu3=256
 nu4=64
 nu5=15
 
-fk_model='2'
-fk_file='//home//u1//u5509915//condapy3//slice_data'
-
-x_data = np.loadtxt(open("%s//x_data%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-x_mean = np.loadtxt(open("%s//x_mean%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-x_var = np.loadtxt(open("%s//x_var%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-x_test = np.loadtxt(open("%s//x_test%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-y_data = np.loadtxt(open("%s//y_data%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-y_mean = np.loadtxt(open("%s//y_mean%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-y_var = np.loadtxt(open("%s//y_var%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-y_test = np.loadtxt(open("%s//y_test%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-l_data=np.loadtxt(open("%s//l_data%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
-l_test=np.loadtxt(open("%s//l_test%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)  
+fk_model='1'
+fk_file='//lfs//xbrain//home//acctouhou//slice_data//'
+#fk_file=''
+x_data = np.loadtxt(open("%sx_data%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+x_mean = np.loadtxt(open("%sx_mean%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+x_var = np.loadtxt(open("%sx_var%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+x_test = np.loadtxt(open("%sx_test%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+y_data = np.loadtxt(open("%sy_data%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+y_mean = np.loadtxt(open("%sy_mean%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+y_var = np.loadtxt(open("%sy_var%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+y_test = np.loadtxt(open("%sy_test%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+l_data=np.loadtxt(open("%sl_data%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)
+l_test=np.loadtxt(open("%sl_test%s"%(fk_file,fk_model),"rb"),delimiter=" ",skiprows=0)  
 
 x = tf.placeholder(tf.float32, [None, 135])
 y= tf.placeholder(tf.float32, [None,15])
 
-pp= tf.placeholder(tf.float32)
-aa= tf.placeholder(tf.float32)
+#pp= tf.placeholder(tf.float32)
+#aa= tf.placeholder(tf.float32)
 
 train= tf.placeholder(tf.bool)
 
@@ -99,11 +99,19 @@ with tf.control_dependencies(update_ops):
 init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
-
+all_p=["X_displacement","Y_displacement","pressure",
+       "x_strain ","Y_strain","Z_strain",
+       "principal_strain_1","principal_strain_2","principal_strain_3",
+       "X_flow ","Y_flow  ","concentration" ,
+       "Young's modulus","Poisson's ratio ","Permeability"]
 
 ###################################
 v_all = tf.trainable_variables()
 g_list = tf.global_variables()
+bn_mean = [g for g in g_list if 'moving_mean' in g.name]
+bn_var = [g for g in g_list if 'moving_variance' in g.name]
+gamma = [g for g in v_all if 'gamma' in g.name]
+beta = [g for g in v_all if 'beta' in g.name]
 we = [g for g in v_all if 'W' in g.name]
 optimizer = tf.train.AdamOptimizer()
 gradients = optimizer.compute_gradients(loss,we)
@@ -131,10 +139,10 @@ def mv_check():
         plt.clf()
     
     
-def plott(a,b,c,i,wtf,tt):
-            plt.scatter(a[:,i-1]*c, b[:,i-1]*c, s=0.5, c='b', alpha=.5)
-            plt.plot(b[:,i-1]*c,b[:,i-1]*c, 'r--')
-            plt.title('%d_%s [r=%.3f p=%.3f]'%(i,tt,wtf[0],wtf[1]))
+def plott(a,b,c,i,wtf,tt,allp):
+            plt.scatter(a[:,i]*c, b[:,i]*c, s=0.5, c='b', alpha=.5)
+            plt.plot(b[:,i]*c,b[:,i]*c, 'r--')
+            plt.title('%s_%s [r=%.3f p=%.3f]'%(allp,tt,wtf[0],wtf[1]))
             plt.ylabel("correct")
             plt.xlabel("prediction")
             plt.savefig('%s%d.png'%(tt,i))
@@ -159,13 +167,11 @@ def print_error(error,local,a):
     plt.colorbar(sc)
     plt.xlim((1,100))
     plt.ylim((1,100))
-    plt.title('location_%d'%(a))
+    plt.title('location_%s'%(all_p[a-1]))
     plt.savefig('errorlocal_%d.png'%(a))
     plt.clf()
     
 def error_check(error,local):
-    m=error.mean(axis=0)
-    v=error.var(axis=0)
     a0=[]
     b0=[]
     for w in range(15):
@@ -178,7 +184,6 @@ def error_check(error,local):
     
     
     err_info=local[total]
-    errr=error[total]
     day=err_info[:,2]
     model=err_info[:,1]
     plt.hist(day,bins=34)
@@ -223,8 +228,6 @@ iterator = dataset.make_initializable_iterator()
 x_in, y_in = iterator.get_next()
 def error_check2(error,local):
     
-    m=error.mean(axis=0)
-    v=error.var(axis=0)
     a0=[]
     b0=[]
     for w in range(15):
@@ -235,7 +238,6 @@ def error_check2(error,local):
         total+=a0[tt+1]
         total+=b0[tt+1]
     err_info=local[total]
-    errr=error[total] 
     day=err_info[:,2]
     model=err_info[:,1]
     plt.hist(day,bins=34)
@@ -262,29 +264,33 @@ def error_data(a,b,c,d,e):
     vt=a.var()
     b.append(mt)
     c.append(vt)
-    plt.plot(b)
+    plt.plot(np.log10(np.abs(b)))
     plt.title('Bias_error')
     plt.xlabel("Iteration")
+    plt.ylabel("Log")
     plt.savefig('m_total.png')
     plt.clf()
-    plt.plot(c)
+    plt.plot(np.log10(np.abs(c)))
     plt.title('Variance_error')
     plt.xlabel("Iteration")
+    plt.ylabel("Log")
     plt.savefig('v_total.png')
     plt.clf()
     d=np.vstack((d,m))
     e=np.vstack((e,v))
     for bb in range(15):
-        plt.plot(d[:,bb],label="%d"%(bb+1)) 
+        plt.plot(np.log10(np.abs(d[:,bb])),label="%d"%(bb+1)) 
     plt.legend(loc='upper right')
     plt.title('Bias_error 1-15')
     plt.xlabel("Iteration")
+    plt.ylabel("Log")
     plt.savefig('m1_15.png')
     plt.clf()
     for bb in range(15):
-        plt.plot(e[:,bb],label="%d"%(bb+1))
+        plt.plot(np.log10(np.abs(e[:,bb])),label="%d"%(bb+1))
     plt.title('Variance_error 1-15')
     plt.xlabel("Iteration")
+    plt.ylabel("Log")
     plt.legend(loc='upper right')
     plt.savefig('v1_15.png')
     plt.clf()
@@ -313,10 +319,10 @@ for i in range(int(1e4)):
     long=int(len(x_train)/batch_size*2)
     for j in range(long):
         temp_x,temp_y=sess.run([x_in,y_in])
-        _ = sess.run(step,feed_dict={x:temp_x,y:temp_y,train:True,pp:0.8,aa:0})
+        _ = sess.run(step,feed_dict={x:temp_x,y:temp_y,train:True})
     if(i%20==0):
-        loss_tr=sess.run(loss1,feed_dict={x:temp_x,y:temp_y,train:False,pp:1,aa:0.2})
-        loss_v,error,temp,gg = sess.run([loss1,test_loss,ans,y],feed_dict={x:x_vail,y:y_vail,train:False,pp:1,aa:0.2})        
+        loss_tr=sess.run(loss1,feed_dict={x:temp_x,y:temp_y,train:False})
+        loss_v,error,temp,gg = sess.run([loss1,test_loss,ans,y],feed_dict={x:x_vail,y:y_vail,train:False})        
         loss_train.append(loss_tr)
         loss_vali.append(loss_v)
         error_check(error,local)
@@ -327,55 +333,71 @@ for i in range(int(1e4)):
         for uu in range(15):
             exec("temp_%d=stats.pearsonr(gg[:,%d],temp[:,%d])"%(uu,uu,uu))
             exec("print(temp_%d[0])"%(uu))
-            exec("plott(temp,gg,1e-2,%d,temp_0,'vali')"%(uu+1))
+            exec("plott(temp,gg,1e-2,%d,temp_%d,'vali',all_p[%d])"%(uu,uu,uu))
             
         print('-------------------------')
-        plt.plot(loss_train)
+        plt.plot(np.log10(loss_train))
         plt.title('loss_train')
         plt.xlabel("Iteration")
+        plt.ylabel("Log")
         #plt.ylim(0,2e5)
         plt.savefig('loss_t.png')
         plt.clf()
-        plt.plot(loss_vali)
+        plt.plot(np.log10(loss_vali))
         plt.title('loss_vali')
         plt.xlabel("Iteration")
+        plt.ylabel("Log")
         plt.savefig('loss_v.png')
         plt.clf()
         
         for tt2 in range(len(gradients)):
-            exec("lg%d = sess.run(g%d[0],feed_dict={x:x_vail,y:y_vail,train:True,pp:1,aa:0.2})" % (tt2,tt2))
+            exec("lg%d = sess.run(g%d[0],feed_dict={x:x_vail,y:y_vail,train:True})" % (tt2,tt2))
             exec("sns.distplot(lg%d.reshape((lg%d.size,1)),kde=True,norm_hist=False)"%(tt2,tt2))
             exec("wtf1=lg%d.mean()"% (tt2))
             exec("wtf2=lg%d.var()"% (tt2))
             exec("gm%d.append(wtf1)"% (tt2))
             exec("gv%d.append(wtf2)"% (tt2))
             plt.title('Layer%d m=%s v=%s'%(tt2+1,wtf1,wtf2))
-            plt.ylabel("Gradients")
+            plt.ylabel("distribution")
+            plt.xlabel("Gradients")
             plt.savefig("gradient%d.png"%(tt2+1))
             plt.clf()
         for tt2 in range(len(gradients)):
-            exec("plt.plot(gm%d,label='l%dm')" % (tt2,tt2))
-            exec("plt.plot(gv%d,label='l%dv')" % (tt2,tt2))
+            exec("plt.plot(np.log10(np.abs(gm%d)),label='l%dm')" % (tt2,tt2))
+            exec("plt.plot(np.log10(np.abs(gv%d)),label='l%dv')" % (tt2,tt2))
         plt.legend(loc='upper right')
         plt.title('gradient_mv')
         plt.xlabel("Iteration")
+        plt.ylabel("log_scale")
         plt.savefig('gmv.png')
         plt.clf()
     if(i%200==0):
-        error,loss_te,temp,gg = sess.run([test_loss,loss1,ans,y],feed_dict={x:x_test,y:y_test,train:False,pp:1,aa:0.2})
+        error,loss_te,temp,gg = sess.run([test_loss,loss1,ans,y],feed_dict={x:x_test,y:y_test,train:False})
         error_check2(error,l_test)
         loss_test.append(loss_te)
         print('loss_te:',loss_te)
-        plt.plot(loss_test)
+        plt.plot(np.log10(loss_test))
         plt.title('loss_test')
         plt.xlabel("Iteration")
+        plt.ylabel("Log")
         plt.savefig('loss_te.png')
         plt.clf()
         print('---------test------------')
         for uu in range(15):
             exec("temp_%d=stats.pearsonr(gg[:,%d],temp[:,%d])"%(uu,uu,uu))
             exec("print(temp_%d[0])"%(uu))
-            exec("plott(temp,gg,1e-2,%d,temp_0,'test')"%(uu+1))
+            exec("plott(temp,gg,1e-2,%d,temp_%d,'test',all_p[%d])"%(uu,uu,uu))
         print('-------------------------')
         #mv_check()
         save_path = saver.save(sess, "my_net/save_net.ckpt")
+for tt2 in range(len(gradients)):
+    exec("np.savetxt('gm%d.out', gm%d, delimiter=' ')"% (tt2,tt2))
+    exec("np.savetxt('gv%d.out', gv%d, delimiter=' ')"% (tt2,tt2))
+    exec("gv%d=[]"% (tt2))
+np.savetxt('loss_train.out',loss_train, delimiter=' ')
+np.savetxt('loss_vali.out',loss_vali, delimiter=' ')
+np.savetxt('loss_test.out',loss_test, delimiter=' ')
+np.savetxt('mt.out',mt, delimiter=' ')
+np.savetxt('vt.out',vt, delimiter=' ')
+np.savetxt('m.out',m, delimiter=' ')
+np.savetxt('v.out',v, delimiter=' ')

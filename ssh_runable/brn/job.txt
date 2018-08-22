@@ -1,0 +1,6 @@
+1:l5
+2:l7
+3:sigmoid
+4:relu
+5:l9
+6:flat

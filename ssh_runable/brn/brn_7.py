@@ -19,16 +19,20 @@ def xavier_init(size):
 
 
 batch_size=256
-nu=128
-nu2=512
-nu3=256
-nu4=192
-nu5=96
-nu6=64
-nu7=32
-nu8=25
-nu9=15
-
+nu0=135
+nu1=192
+nu2=256
+nu3=384
+nu4=512
+nu5=384
+nu6=256
+nu7=192
+nu8=128
+nu9=81
+nu10=52
+nu11=36
+nu12=24
+nu13=15
 fk_model=str(sys.argv[2])
 
 fk_file='//lfs//xbrain//home//acctouhou//slice_data//'
@@ -55,25 +59,12 @@ train= tf.placeholder(tf.bool)
 #tf.keras.initializers.lecun_normal()
 #tf.glorot_uniform_initializer()
 wwtf=tf.keras.initializers.lecun_normal()
-W1 = tf.get_variable('W1',shape=[135, nu], initializer=wwtf)
-W2 = tf.get_variable('W2',shape=[nu, nu2], initializer=wwtf)
-W3 = tf.get_variable('W3',shape=[nu2, nu3], initializer=wwtf)
-W4 = tf.get_variable('W4',shape=[nu3, nu4], initializer=wwtf)
-W5 = tf.get_variable('W5',shape=[nu4, nu5], initializer=wwtf)
-W6 = tf.get_variable('W6',shape=[nu5, nu6], initializer=wwtf)
-W7 = tf.get_variable('W7',shape=[nu6, nu7], initializer=wwtf)
-W8 = tf.get_variable('W8',shape=[nu7, nu8], initializer=wwtf)
-W9 = tf.get_variable('W9',shape=[nu8, nu9], initializer=wwtf)
 
-b1 = tf.Variable(tf.zeros(shape=[nu]))
-b2 = tf.Variable(tf.zeros(shape=[nu2]))
-b3 = tf.Variable(tf.zeros(shape=[nu3]))
-b4 = tf.Variable(tf.zeros(shape=[nu4]))
-b5 = tf.Variable(tf.zeros(shape=[nu5]))
-b6 = tf.Variable(tf.zeros(shape=[nu6]))
-b7 = tf.Variable(tf.zeros(shape=[nu7]))
-b8 = tf.Variable(tf.zeros(shape=[nu8]))
-b9 = tf.Variable(tf.zeros(shape=[nu9]))
+for la in range(13):
+    exec("W%d=tf.get_variable('W%d',shape=[nu%d, nu%d], initializer=wwtf)"% (la+1,la+1,la,la+1))
+    exec("b%d = tf.Variable(tf.zeros(shape=[nu%d]))"% (la+1,la+1))
+    
+
 
 def r1(_x):
   alphas = tf.get_variable('a1', _x.get_shape()[-1],initializer=tf.constant_initializer(0.1),dtype=tf.float32)
@@ -90,24 +81,12 @@ def re(x,train,aa):
 #re(W1,train,aa)
 act=tf.nn.elu
 h1 = tf.add(tf.matmul(x,W1),b1)
-bn2 = act(tf.layers.batch_normalization(h1, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h2 = tf.add(tf.matmul(bn2,W2) , b2)
-bn3 = act(tf.layers.batch_normalization(h2, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h3 = tf.add(tf.matmul(bn3,W3) , b3)
-bn4 = act(tf.layers.batch_normalization(h3, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h4 = tf.add(tf.matmul(bn4,W4) , b4)
-bn5 = act(tf.layers.batch_normalization(h4, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h5 = tf.add(tf.matmul(bn5,W5) , b5)
-bn6 = act(tf.layers.batch_normalization(h5, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h6 = tf.add(tf.matmul(bn6,W6) , b6)
-bn7 = act(tf.layers.batch_normalization(h6, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h7 = tf.add(tf.matmul(bn7,W7) , b7)
-bn8 = act(tf.layers.batch_normalization(h7, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h8 = tf.add(tf.matmul(bn8,W8) , b8)
-bn9 = act(tf.layers.batch_normalization(h8, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))
-h9 = tf.add(tf.matmul(bn9,W9) , b9)
+for lb in range(2,14):
+    exec("bn%d = act(tf.layers.batch_normalization(h%d, training=train,epsilon=1e-9,renorm=True,renorm_momentum=0.999))"% (lb,lb-1))
+    exec("h%d = tf.add(tf.matmul(bn%d,W%d) , b%d)"% (lb,lb,lb,lb))
 
-ans=h9
+
+ans=h13
 
 loss= tf.reduce_sum(tf.square(y-ans))
 loss1= tf.reduce_mean(tf.square(y-ans))

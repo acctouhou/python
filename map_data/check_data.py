@@ -23,13 +23,16 @@ l_test=np.loadtxt(open("l_test%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
 
 
 name=list(range(1,13))
+title=["X displacement","y displacement","pressure","x strain","Y_strain",
+       "X_flow","y_flow","concentration","young's modulus","Poisson ratio", "Permeability","S"]
 for i in range (12):
     sns.violinplot(y_data[:,i])
+    plt.title(title[i])
     plt.savefig('%s.png'%(name[i]))
     plt.clf()
 b=np.corrcoef(y_data,rowvar=0)
-f, a = plt.subplots(figsize = (6,4))
-sns.heatmap(b, annot=True, vmax=1, vmin=-1, fmt='.2f', ax=a)
+f, a = plt.subplots(figsize = (10,10))
+sns.heatmap(b, annot=True, vmax=1, vmin=-1, fmt='.3f', ax=a)
 plt.savefig('相關係數.png')
 
 

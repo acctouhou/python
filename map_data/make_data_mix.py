@@ -12,9 +12,28 @@ batch_size=2048
 test_p=0.1
 
 wtf='1'
-x_data = np.loadtxt(open("x_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
-y_data = np.loadtxt(open("y_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
-l_data = np.loadtxt(open("l_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+x_data1 = np.loadtxt(open("x_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+y_data1 = np.loadtxt(open("y_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+l_data1 = np.loadtxt(open("l_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+
+wtf='2'
+x_data2 = np.loadtxt(open("x_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+y_data2 = np.loadtxt(open("y_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+l_data2 = np.loadtxt(open("l_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+
+wtf='3'
+x_data3 = np.loadtxt(open("x_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+y_data3 = np.loadtxt(open("y_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+l_data3 = np.loadtxt(open("l_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+
+wtf='4'
+x_data4 = np.loadtxt(open("x_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+y_data4 = np.loadtxt(open("y_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+l_data4 = np.loadtxt(open("l_data%s"%(wtf),"rb"),delimiter=" ",skiprows=0)
+
+x_data=np.vstack((x_data1,x_data2,x_data3,x_data4))
+y_data=np.vstack((y_data1,y_data2,y_data3,y_data4))
+l_data=np.vstack((l_data1,l_data2,l_data3,l_data4))
 
 size=len(x_data)
 test_batch=size*test_p
@@ -43,7 +62,7 @@ def norm(data):
 [b2,y_mean1,y_var1,y_scale1]=norm(y_test)
 
 
-wtf=1
+wtf=5
 
 
 savetxt("n_x_data%d"%(wtf),a1)

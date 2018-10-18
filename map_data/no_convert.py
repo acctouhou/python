@@ -83,7 +83,7 @@ def c_plus_all(a,ss,par):
     nt=np.zeros([ss-2,ss-2,par*9])
     for i in range (1,ss-1,1):
         for j in range (1,ss-1 ,1):
-            temp=b=np.hstack((tt[i-1,j-1,:],
+            temp=np.hstack((tt[i-1,j-1,:],
                               tt[i,j-1,:],
                               tt[i+1,j-1,:],
                               tt[i-1,j,:],

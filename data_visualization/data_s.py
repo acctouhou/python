@@ -39,7 +39,7 @@ for i in range(34):
     a=np.loadtxt(open('x_fin%d'%(i+1),"rb"),delimiter=" ",skiprows=0)
     b=np.loadtxt(open('y_split%d'%(i+1),"rb"),delimiter=" ",skiprows=0)
     c=np.loadtxt(open('l_split%d'%(i+1),"rb"),delimiter=" ",skiprows=0)
-    d=np.loadtxt(open('1',"rb"),delimiter=" ",skiprows=0)
+    #d=np.loadtxt(open('1',"rb"),delimiter=" ",skiprows=0)
     local=c[:,0]
     y=np.int64(local/1000)
     x=local%1000 

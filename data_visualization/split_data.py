@@ -22,10 +22,10 @@ def norm(data):
     mean=a.mean_
     scale=a.scale_
     var=a.var_
-    return d,b,c
+    return d,mean,var,scale
 
-[a1,x_mean,x_var]=norm(x_data)
-[b1,y_mean,y_var]=norm(y_data)
+[a1,x_mean,x_var,x_scale]=norm(x_data)
+[b1,y_mean,y_var,y_scale]=norm(y_data)
 
 size=len(x_data)
 temp=np.zeros([size,34],dtype=bool)

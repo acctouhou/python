@@ -3,16 +3,11 @@ clear;
 
 %%%%%%%%%%%%%%%%
 gd=99;
-n=45*225;
+n=36*221;
 model=1;
 %%%%%%%%%%%%
-for yy=1:45
-    for zz=1:225
-        local(yy,zz)=yy*1000+zz;
-    end
-end
-local=reshape(local,[n,1]);
-for i=1:1
+
+for i=1:35
 filename=['iteration/Iteration' num2str(i) '.inp']; 
 a=importdata(filename,',',0);
 filename=['diffusion_iteration/Diff_Iteration' num2str(i) '.inp']; 
@@ -22,19 +17,24 @@ c=sortrows(importdata(filename,',',0));
 filename=['S_DATA/S_DATA_' num2str(i) '.txt']; 
 d=sortrows(importdata(filename,',',0));
 
-
 x=a(:,2);
 y=a(:,3);
-%scale=(max(x)-min(x))/(max(y)-min(y));
-%tx=(max(x)-min(x))/gd;
-ty=(max(y)-min(y))/225;
-tx=ty;
-[xi, yi] = meshgrid(min(x):tx:max(x),min(y):ty:max(y));
-
+ty=4.513826666666666e-05
+[xi, yi] = meshgrid(min(x):ty:max(x),min(y):ty:max(y));
+[wtfa,wtfb]=size(xi);
+for yy=1:(wtfb-5)
+    for zz=1:(wtfa-5)
+        local(yy,zz)=yy*1000+zz;
+    end
+end
+n=(wtfa-5)*(wtfb-5);
+if i==1
+local=reshape(local,[n,1]);
+end
 z_1=a(:,4);%X_displacement  
 z_1=vb(x,y,z_1,gd,xi,yi);
 mesh(xi,yi,z_1)
-axis equal
+%axis equal
 view(20,490);
 title(['X displacement' num2str(i)]);
 pname=['1_' num2str(i) '.png']; 

@@ -15,7 +15,13 @@ for i in range (35):
     f1="%d"%(i+1)
     data.append(np.loadtxt(open(f1,"rb"),delimiter=" ",skiprows=0))
 data= np.asarray(data)
-
+'''
+local=data[:,:,12]
+x=np.int64(local/1000)
+y=local%1000
+plt.scatter(x[1,;],y[1,:])
+'''
+#%%
 '''
 aa=data[0,:,8]>=1.1e11
 aa=np.where(aa==1)
@@ -40,7 +46,7 @@ def s_classification(s):
         if s[i]==0.0:
             ans[i]=5
         elif s[i]<=0.0103:
-            ans[i]=6    
+            ans[i]=6
         elif s[i]<=0.266:
             ans[i]=4
         elif s[i]<=1 and s[i]>0.266:
@@ -52,7 +58,8 @@ def s_classification(s):
             
     return ans
 #%%
-for i in range(len(data)):
+#for i in range(len(data)):
+for i in range(34):
     temp=data[i]
     temp_s=s_classification(temp[:,11])
     temp_con=1-temp[:,7]
@@ -82,10 +89,10 @@ c=np.zeros([1,para])
 e=np.zeros([1,3])
 
 def c_plus_all(a,ss,par):
-    tt=np.reshape(a,[ss,ss,par])
-    nt=np.zeros([ss-2,ss-2,par*9])
-    for i in range (1,ss-1,1):
-        for j in range (1,ss-1 ,1):
+    tt=np.reshape(a,[ss[0],ss[1],par])
+    nt=np.zeros([ss[0]-2,ss[1]-2,par*9])
+    for i in range (1,ss[0]-1,1):
+        for j in range (1,ss[1]-1 ,1):
             temp=b=np.hstack((tt[i-1,j-1,:],
                               tt[i,j-1,:],
                               tt[i+1,j-1,:],
@@ -97,37 +104,38 @@ def c_plus_all(a,ss,par):
                               tt[i+1,j+1,:],
                               ))
             nt[i-1,j-1,:]=temp
-    ans=np.reshape(nt,[(gd-2)*(gd-2),par*9])
+    ans=np.reshape(nt,[(ss[0]-2)*(ss[1]-2),par*9])
     return ans
 
+def local_info(info):
+    local=info[:,0]
+    xx=np.int64(local/1000)
+    yy=local%1000
+    ttt=np.reshape(info,[int(yy.max()),int(xx.max()),3])
+    cyka=ttt[:,np.arange(1,int(xx.max()-1)),:]
+    cyka=cyka[np.arange(1,int(yy.max()-1)),:,:]
+    ans=np.reshape(cyka,[int(xx.max()-2)*int(yy.max()-2),3])
+    return ans,xx,yy
+
+#for i in range(34):
 for i in range(34):
     b=after_data[i,:,:]
     ###############################location
     info=b[:,para:para+3]
-    ttt=np.reshape(info,[gd,gd,3])
-    ttt[:,[0,gd-2],0]=987
-    ttt[[0,gd-2],:,0]=987
-    info=np.reshape(ttt,[gd*gd,3])
-    t1=info[:,0]==987
-    t1=np.where(t1==1)
-    info=np.delete(info,t1, 0)
+    [info,xx,yy]=local_info(info)
     ############
     b=b[:,0:para]
-    b=c_plus_all(b,gd,para)
+    b=c_plus_all(b,[int(yy.max()),int(xx.max())],para)
     d=after_data[i+1,:,:]
     d=d[:,0:para]
-    t3=np.reshape(d,[gd,gd,para])
-    t3[:,[0,gd-1],0]=987
-    t3[[0,gd-1],:,0]=987
-    t3=np.reshape(t3,[gd*gd,para])
-    t4=t3[:,0]==987
-    t4=np.where(t4==1)
-    d=np.delete(t3,t4, 0)
+    t3=np.reshape(d,[int(yy.max()),int(xx.max()),para])
+    d=t3[:,np.arange(1,int(xx.max()-1)),:]
+    d=d[np.arange(1,int(yy.max()-1)),:,:]
+    d=np.reshape(d,[int(xx.max()-2)*int(yy.max()-2),para])
 
     a=np.vstack((a,b))
     c=np.vstack((c,d))
     e=np.vstack((e,info))
-
 
 a=np.delete(a,0, 0)
 c=np.delete(c,0, 0)
@@ -143,7 +151,13 @@ e=np.delete(e,wtf, 0)
 
 cc=np.split(c, 34, axis=0)
 ee=np.split(e, 34, axis=0)
- 
+
+local=ee[i][:,0]
+x=np.int64(local/1000)
+y=local%1000
+plt.scatter(x,y)
+'''
+'''
 
 for i in range(34):
     plt.hist(np.log10(cc[i][:,8]),bins=100)
@@ -168,8 +182,8 @@ for i in range(34):
     plt.savefig('s%d_.png'%(i))
     plt.clf()
     local=ee[i][:,0]
-    y=np.int64(local/1000)
-    x=local%1000
+    x=np.int64(local/1000)
+    y=local%1000
     plt.scatter(x,y,c='blue')
     tar=cc[i][:,11]<0.0103
     plt.scatter(x[tar],y[tar],c='orange')
@@ -190,3 +204,4 @@ total=np.where(bb==1)
 print(len(total[0]))
 
 #104 8
+

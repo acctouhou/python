@@ -7,12 +7,11 @@ import matplotlib.pyplot as plt
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
+###################################################################################################
 lx=[]
 ly=[]
 lz=[]
-
 def cube(ax,x,y,z,color,w):
-    
     r = [-0.5,0.5]
     X, Y = np.meshgrid(r, r)
     one = np.ones([2,2])/2
@@ -25,6 +24,10 @@ def cube(ax,x,y,z,color,w):
     lx.append(x)
     ly.append(y)
     lz.append(z)
+def save():
+    faces=np.vstack((np.asarray(lx),np.asarray(ly),np.asarray(lz))).T
+    np.savetxt('loc',faces)
+#######################################################################################################
 import random
 random.randint(0,1)
 color=[	'#00AA00','#33FF33']
@@ -66,13 +69,14 @@ a=plt.xlim()
 b=plt.ylim()
 #plt.axis([b[0],b[1],b[0],b[1],b[0],b[1]])
 plt.show()
+'''
 np.savetxt('lx',lx*2)
 np.savetxt('ly',ly*2)
 np.savetxt('lz',lz*2)
-faces=np.vstack((np.asarray(lx),np.asarray(ly),np.asarray(lz))).T
-np.savetxt('loc',faces)
+'''
 
 
+save()
 '''
 #%%
 vertices = np.array([

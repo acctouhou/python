@@ -1,12 +1,38 @@
-
-
 import struct
 import numpy as np
 loc=np.loadtxt('loc',delimiter=' ')
 
 
 
+BINARY_HEADER ="80sI"
+BINARY_FACET = "12fH"
 
+class ASCII_STL_Writer:
+    def __init__(self, stream):
+        self.fp = stream
+        self._write_header()
+    def _write_header(self):
+        self.fp.write("solid python\n")
+    def close(self):
+        self.fp.write("endsolid python\n")
+    def _write(self, face):
+        self.fp.write(ASCII_FACET.format(face=face))
+    def _split(self, face):
+        p1, p2, p3, p4 = face
+        return (p1, p2, p3), (p3, p4, p1)
+    def add_face(self, face):
+        if len(face) == 4:
+            face1, face2 = self._split(face)
+            self._write(face1)
+            self._write(face2)
+        elif len(face) == 3:
+            self._write(face)
+        else:
+            raise ValueError('only 3 or 4 vertices for each face')
+
+    def add_faces(self, faces):
+        for face in faces:
+            self.add_face(face)
 class Binary_STL_Writer(ASCII_STL_Writer):
     def __init__(self, stream):
         self.counter = 0
@@ -30,7 +56,6 @@ class Binary_STL_Writer(ASCII_STL_Writer):
 
 def example():
     def get_cube(x,y,z):
-        # cube corner points
         s = 1.
         p1 = (x, y, z)
         p2 = (x, y, z+s)
@@ -40,9 +65,6 @@ def example():
         p6 = (x+s, y, z+s)
         p7 = (x+s, y+s, z)
         p8 = (x+s, y+s, z+s)
-
-        # define the 6 cube faces
-        # faces just lists of 3 or 4 vertices
         return [
             [p1, p5, p7, p3],
             [p1, p5, p6, p2],
@@ -51,12 +73,9 @@ def example():
             [p1, p3, p4, p2],
             [p2, p6, p8, p4],
         ]
-
     with open('cube.stl', 'wb') as fp:
         writer = Binary_STL_Writer(fp)
         for i in range(len(loc)):
             writer.add_faces(get_cube(loc[i,0],loc[i,1],loc[i,2]))
         writer.close()
-
-if __name__ == '__main__':
-    example()
+example()

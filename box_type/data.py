@@ -24,12 +24,13 @@ def wtf_sort(tx,ty,n,x,y,tol):
             ww[:,i,:]=temp
         return ww
 t='c'
+type_=1
 for i in range(35):
     n=1
-    a=np.loadtxt('%s\\iteration\\Iteration%d.inp'%(t,n),delimiter=',')
-    s=np.loadtxt('%s\\s\\S_DATA%d.inp'%(t,n),delimiter=',')
-    e=np.loadtxt('%s\\E_P_PERM\\ID_E_P%d.inp'%(t,n),delimiter=',')
-    d=np.loadtxt('%s\\DIFFUSION\\diffusion_iteration%d.inp'%(t,n),delimiter=',')
+    a=np.loadtxt('%s\\iteration\\Iteration%d.inp'%(t,i+1),delimiter=',')
+    s=np.loadtxt('%s\\s\\S_DATA%d.inp'%(t,i+1),delimiter=',')
+    e=np.loadtxt('%s\\E_P_PERM\\ID_E_P%d.inp'%(t,i+1),delimiter=',')
+    d=np.loadtxt('%s\\DIFFUSION\\diffusion_iteration%d.inp'%(t,i+1),delimiter=',')
     sss=np.concatenate((a[:,1:],d[:,1][:,np.newaxis],e[:,[1,2,3]],s[:,1][:,np.newaxis]),axis=1)
     x=a[:,1]
     y=a[:,2]
@@ -51,7 +52,7 @@ for i in range(35):
     plt.savefig('reshape%d.png'%(i))
     plt.clf()
     final=np.insert(final,19, values=i, axis=2)
-    final=np.insert(final,20, values=1, axis=2)
+    final=np.insert(final,20, values=type_, axis=2)
     cyka=np.reshape(final,[int(final.shape[0]*final.shape[1]),21])
     np.savetxt('%s'%(i),cyka)
-
+np.savetxt('shape',[final.shape[0],final.shape[1]])   
